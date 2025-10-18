@@ -1,7 +1,5 @@
 #include "uiManager.h"
 
-#define IDC_EDIT 100
-
 void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
     HWND filePathLabel = CreateWindowEx(
         0, L"STATIC", L"対象ファイルのパス：",
@@ -11,9 +9,14 @@ void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
     );
     m_filePathEdit = CreateWindow(
         L"EDIT", L"",
-        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
         10, 40, 250, 24,
-        hwnd, (HMENU)IDC_EDIT, hInstance, NULL);
+        hwnd, (HMENU)GetWindowID(), hInstance, NULL);
+    m_browseButton = CreateWindowEx(
+        0, L"BUTTON", L"参照…",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        270, 40, 80, 24,
+        hwnd, (HMENU)(GetWindowID()), hInstance, NULL);
     HWND sourceLabel = CreateWindowEx(
         0, L"STATIC", L"置換する対象文字列：",
         WS_CHILD | WS_VISIBLE,
@@ -24,7 +27,7 @@ void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER,
         10, 100, 250, 24,
-        hwnd, (HMENU)IDC_EDIT, hInstance, NULL);
+        hwnd, (HMENU)GetWindowID(), hInstance, NULL);
     HWND destLabel = CreateWindowEx(
         0, L"STATIC", L"変更後の文字列：",
         WS_CHILD | WS_VISIBLE,
@@ -35,19 +38,53 @@ void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER,
         10, 160, 250, 24,
-        hwnd, (HMENU)(IDC_EDIT + 1), hInstance, NULL);
+        hwnd, (HMENU)(GetWindowID()), hInstance, NULL);
     m_executeButton = CreateWindowEx(
         0, L"BUTTON", L"開始",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         10, 200, 100, 30,
-        hwnd, (HMENU)(IDC_EDIT + 2), hInstance, NULL);
+        hwnd, (HMENU)GetWindowID(), hInstance, NULL);
 }
 
-void UIManager::OpenFilePicker(HWND hwnd) {
-    IFileOpenDialog* pFileOpen = nullptr;
-    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+wchar_t* UIManager::OpenFilePicker(HWND hwnd) {
+    IFileOpenDialog* pFileOpen;
+    wchar_t* filePath = nullptr;
 
-    hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_PPV_ARGS(&pFileOpen));
+    // Create the FileOpenDialog object.
+    HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
+        IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
 
-    hr = pFileOpen->Show(hwnd);
+    if (SUCCEEDED(hr)) {
+        // Show the Open dialog box.
+        hr = pFileOpen->Show(NULL);
+
+        // Get the file name from the dialog box.
+        if (SUCCEEDED(hr)) {
+            IShellItem* pItem;
+            hr = pFileOpen->GetResult(&pItem);
+            if (SUCCEEDED(hr)) {
+                PWSTR pszFilePath;
+                hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+                filePath = pszFilePath;
+                pItem->Release();
+            }
+        }
+        pFileOpen->Release();
+    }
+    return filePath;
+}
+
+void UIManager::SetFilePathText(const wchar_t* path) {
+    int res = SetWindowTextW(m_filePathEdit, path);
+}
+
+const wchar_t* UIManager::GetFilePathText() {
+    static wchar_t buffer[MAX_PATH];
+    GetWindowTextW(m_filePathEdit, buffer, MAX_PATH);
+    return buffer;
+}
+
+int UIManager::GetWindowID() {
+    return m_windowID++;
 }

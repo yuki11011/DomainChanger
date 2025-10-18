@@ -1,5 +1,6 @@
 #include "window.h"
 #include <iostream>
+#include <fstream>
 
 #define IDC_EDIT 100
 
@@ -102,15 +103,17 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
     HDC hdc;
     PAINTSTRUCT ps;
 
-    UIManager ui;
-
     switch (uMsg) {
     case WM_DESTROY:
+        CoUninitialize();
         PostQuitMessage(0);
         return 0;
-    case WM_CREATE:
+    case WM_CREATE: {
+        HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
+            COINIT_DISABLE_OLE1DDE);
         ui.CreateControls(hwnd, ((LPCREATESTRUCT)lParam)->hInstance);
         return 0;
+    }
     case WM_PAINT: {
      /*   HBRUSH hbr = CreateSolidBrush(RGB(55, 55, 55));
 
@@ -127,10 +130,19 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
         return 0;*/
     }
     case WM_COMMAND:
-        if (LOWORD(wParam) == IDC_EDIT + 2) {
+        if (LOWORD(wParam) == IDC_EDIT + 1) {
+            wchar_t* filePath = ui.OpenFilePicker(hwnd);
+            if (filePath) {
+                ui.SetFilePathText(filePath);
+            }
+            return 0;
+        } else if (LOWORD(wParam) == IDC_EDIT + 4) {
+            std::ifstream ifs(ui.GetFilePathText());
+            return 0;
         }
-        return 0;
+        break;
     default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }

@@ -23,4 +23,6 @@ private:
     std::wstring m_windowTitle;
     int m_width;
     int m_height;
+
+    UIManager ui;
 };
