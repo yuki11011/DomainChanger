@@ -126,6 +126,12 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
         int wmId = LOWORD(wParam);
 
         switch (wmId) {
+        case IDC_FILEPATH_EDIT: {
+            std::wstring text = m_ui.GetFilePathText();
+            m_model.SetFilePath(text);
+            return 0;
+        }
+
         case IDC_BROWSE_BUTTON:
             m_controller.OnBrowseButtonClicked(hwnd);
             return 0;
