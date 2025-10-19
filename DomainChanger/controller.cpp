@@ -22,7 +22,7 @@ void Controller::OnExecuteButtonClicked(HWND hwnd) {
         m_ui->AddMessageToLines(L"ファイルの内容：");
         std::wstring fileContent;
         for (const auto& line : m_model->GetFileContent()) {
-            fileContent += line + L"\n";
+            fileContent += line + L"\r\n";
         }
         m_ui->AddMessageToLines(fileContent);
     } else {

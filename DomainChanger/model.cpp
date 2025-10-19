@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <locale>
+#include <codecvt>
 
 void Model::SetFilePath(std::wstring path) {
     m_filePath = std::move(path);
@@ -22,6 +24,7 @@ bool Model::LoadFile() {
         return false;
     }
 
+    file.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
     std::wstring line;
     while (std::getline(file, line)) {
         m_fileContent.push_back(line);
