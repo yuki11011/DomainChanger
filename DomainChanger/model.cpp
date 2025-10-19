@@ -11,7 +11,7 @@ std::wstring Model::GetFilePath() const {
     return m_filePath;
 }
 
-std::wstring Model::GetFileContent() const {
+std::vector<std::wstring> Model::GetFileContent() const {
     return m_fileContent;
 }
 
@@ -24,7 +24,7 @@ bool Model::LoadFile() {
 
     std::wstring line;
     while (std::getline(file, line)) {
-        m_fileContent += line + L"\n";
+        m_fileContent.push_back(line);
     }
 
     file.close();

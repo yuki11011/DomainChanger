@@ -20,7 +20,11 @@ void Controller::OnExecuteButtonClicked(HWND hwnd) {
     if (m_model->LoadFile()) {
         m_ui->AddMessageToLines(L"ファイルの読み込みに成功しました");
         m_ui->AddMessageToLines(L"ファイルの内容：");
-        m_ui->AddMessageToLines(m_model->GetFileContent());
+        std::wstring fileContent;
+        for (const auto& line : m_model->GetFileContent()) {
+            fileContent += line + L"\n";
+        }
+        m_ui->AddMessageToLines(fileContent);
     } else {
         m_ui->AddMessageToLines(L"ファイルの読み込みに失敗しました");
     }

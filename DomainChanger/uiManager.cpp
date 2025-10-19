@@ -47,7 +47,7 @@ void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
     m_messageLines = CreateWindow(
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
-        10, 250, 340, 400,
+        380, 40, 880, 600,
         hwnd, NULL, hInstance, NULL);
 }
 
@@ -98,9 +98,14 @@ void UIManager::SetMessagesText(const std::wstring text) {
 }
 
 void UIManager::AddMessageToLines(const std::wstring message) {
-    std::wstring currentText = GetMessagesText();
-    currentText += message + L"\r\n";
-    SetMessagesText(currentText);
+    std::wstring toAppend = message + L"\r\n";
+    // Get current length and set selection to end
+    int len = GetWindowTextLengthW(m_messageLines);
+    SendMessageW(m_messageLines, EM_SETSEL, (WPARAM)len, (LPARAM)len);
+    // Replace selection (empty) with new text
+    SendMessageW(m_messageLines, EM_REPLACESEL, FALSE, (LPARAM)toAppend.c_str());
+    // Ensure caret/scroll follows appended text
+    SendMessageW(m_messageLines, EM_SCROLLCARET, 0, 0);
 }
 
 std::wstring UIManager::GetFilePathText() const {
