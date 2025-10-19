@@ -10,7 +10,10 @@ Window::Window(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowTitl
     m_hWnd(nullptr),
     m_windowTitle(windowTitle),
     m_width(width),
-    m_height(height) {
+    m_height(height),
+    m_ui(),
+    m_controller(),
+    m_model() {
 }
 
 Window::~Window() {
@@ -100,9 +103,6 @@ LRESULT CALLBACK Window::StaticWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
 
 //実際にメッセージを処理するのはこの関数
 LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    HDC hdc;
-    PAINTSTRUCT ps;
-
     switch (uMsg) {
     case WM_DESTROY:
         CoUninitialize();
@@ -111,38 +111,31 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
     case WM_CREATE: {
         HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
             COINIT_DISABLE_OLE1DDE);
-        ui.CreateControls(hwnd, ((LPCREATESTRUCT)lParam)->hInstance);
+        if (FAILED(hr)) {
+            MessageBoxW(hwnd, L"COM初期化に失敗しました", L"エラー", MB_OK | MB_ICONERROR);
+            return -1;
+        }
+
+        m_ui.CreateControls(hwnd, m_hInstance);
+        m_controller.SetModel(&m_model);
+        m_controller.SetUIManager(&m_ui);
+
         return 0;
     }
-    case WM_PAINT: {
-     /*   HBRUSH hbr = CreateSolidBrush(RGB(55, 55, 55));
+    case WM_COMMAND: {
+        int wmId = LOWORD(wParam);
 
-        hdc = BeginPaint(hwnd, &ps);
-
-        HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, hbr);
-
-        Rectangle(hdc, 5, 5, m_width - 5, m_height - 5);
-
-        SelectObject(hdc, oldBrush);
-
-        EndPaint(hwnd, &ps);
-        DeleteObject(hbr);
-        return 0;*/
-    }
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDC_EDIT + 1) {
-            wchar_t* filePath = ui.OpenFilePicker(hwnd);
-            if (filePath) {
-                ui.SetFilePathText(filePath);
-            }
+        switch (wmId) {
+        case IDC_BROWSE_BUTTON:
+            m_controller.OnBrowseButtonClicked(hwnd);
             return 0;
-        } else if (LOWORD(wParam) == IDC_EDIT + 4) {
-            std::ifstream ifs(ui.GetFilePathText());
+
+        case IDC_EXECUTE_BUTTON:
+            m_controller.OnExecuteButtonClicked(hwnd);
             return 0;
         }
         break;
-    default:
-        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }

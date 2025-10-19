@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 #include <string>
-#include "uiManager.h"
+#include "controller.h"
 
 class Window {
 public:
@@ -24,5 +24,7 @@ private:
     int m_width;
     int m_height;
 
-    UIManager ui;
+    Model m_model;
+    UIManager m_ui;
+    Controller m_controller;
 };

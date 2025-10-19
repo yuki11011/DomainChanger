@@ -11,12 +11,12 @@ void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
         10, 40, 250, 24,
-        hwnd, (HMENU)GetWindowID(), hInstance, NULL);
+        hwnd, (HMENU)IDC_FILEPATH_EDIT, hInstance, NULL);
     m_browseButton = CreateWindowEx(
         0, L"BUTTON", L"参照…",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         270, 40, 80, 24,
-        hwnd, (HMENU)(GetWindowID()), hInstance, NULL);
+        hwnd, (HMENU)IDC_BROWSE_BUTTON, hInstance, NULL);
     HWND sourceLabel = CreateWindowEx(
         0, L"STATIC", L"置換する対象文字列：",
         WS_CHILD | WS_VISIBLE,
@@ -27,7 +27,7 @@ void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER,
         10, 100, 250, 24,
-        hwnd, (HMENU)GetWindowID(), hInstance, NULL);
+        hwnd, (HMENU)IDC_TARGET_EDIT, hInstance, NULL);
     HWND destLabel = CreateWindowEx(
         0, L"STATIC", L"変更後の文字列：",
         WS_CHILD | WS_VISIBLE,
@@ -38,17 +38,22 @@ void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER,
         10, 160, 250, 24,
-        hwnd, (HMENU)(GetWindowID()), hInstance, NULL);
+        hwnd, (HMENU)IDC_REPLACEMENT_EDIT, hInstance, NULL);
     m_executeButton = CreateWindowEx(
         0, L"BUTTON", L"開始",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         10, 200, 100, 30,
-        hwnd, (HMENU)GetWindowID(), hInstance, NULL);
+        hwnd, (HMENU)IDC_EXECUTE_BUTTON, hInstance, NULL);
+    m_messageLines = CreateWindow(
+        L"EDIT", L"",
+        WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
+        10, 250, 340, 400,
+        hwnd, NULL, hInstance, NULL);
 }
 
-wchar_t* UIManager::OpenFilePicker(HWND hwnd) {
+std::wstring UIManager::OpenFilePicker(HWND hwnd) {
     IFileOpenDialog* pFileOpen;
-    wchar_t* filePath = nullptr;
+    std::wstring filePath;
 
     // Create the FileOpenDialog object.
     HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
@@ -66,8 +71,9 @@ wchar_t* UIManager::OpenFilePicker(HWND hwnd) {
                 PWSTR pszFilePath;
                 hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
-                filePath = pszFilePath;
+                filePath.assign(pszFilePath ? pszFilePath : L"");
                 pItem->Release();
+                CoTaskMemFree(pszFilePath);
             }
         }
         pFileOpen->Release();
@@ -75,16 +81,64 @@ wchar_t* UIManager::OpenFilePicker(HWND hwnd) {
     return filePath;
 }
 
-void UIManager::SetFilePathText(const wchar_t* path) {
-    int res = SetWindowTextW(m_filePathEdit, path);
+void UIManager::SetFilePathText(const std::wstring path) {
+    int res = SetWindowTextW(m_filePathEdit, path.c_str());
 }
 
-const wchar_t* UIManager::GetFilePathText() {
-    static wchar_t buffer[MAX_PATH];
-    GetWindowTextW(m_filePathEdit, buffer, MAX_PATH);
+void UIManager::SetTargetText(const std::wstring path) {
+    int res = SetWindowTextW(m_targetEdit, path.c_str());
+}
+
+void UIManager::SetReplacementText(const std::wstring path) {
+    int res = SetWindowTextW(m_replacementEdit, path.c_str());
+}
+
+void UIManager::SetMessagesText(const std::wstring text) {
+    int res = SetWindowTextW(m_messageLines, text.c_str());
+}
+
+void UIManager::AddMessageToLines(const std::wstring message) {
+    std::wstring currentText = GetMessagesText();
+    currentText += message + L"\r\n";
+    SetMessagesText(currentText);
+}
+
+std::wstring UIManager::GetFilePathText() const {
+    int len = GetWindowTextLengthW(m_filePathEdit);
+    if (len <= 0) return L"";
+    std::wstring buffer;
+    buffer.resize(len + 1);
+    GetWindowTextW(m_filePathEdit, &buffer[0], len + 1);
+    buffer.resize(len);
     return buffer;
 }
 
-int UIManager::GetWindowID() {
-    return m_windowID++;
+std::wstring UIManager::GetTargetText() const {
+    int len = GetWindowTextLengthW(m_targetEdit);
+    if (len <= 0) return L"";
+    std::wstring buffer;
+    buffer.resize(len + 1);
+    GetWindowTextW(m_targetEdit, &buffer[0], len + 1);
+    buffer.resize(len);
+    return buffer;
+}
+
+std::wstring UIManager::GetReplacementText() const {
+    int len = GetWindowTextLengthW(m_replacementEdit);
+    if (len <= 0) return L"";
+    std::wstring buffer;
+    buffer.resize(len + 1);
+    GetWindowTextW(m_replacementEdit, &buffer[0], len + 1);
+    buffer.resize(len);
+    return buffer;
+}
+
+std::wstring UIManager::GetMessagesText() const {
+    std::wstring buffer;
+    int len = GetWindowTextLengthW(m_messageLines);
+    if (len <= 0) return L"";
+    buffer.resize(len + 1);
+    GetWindowTextW(m_messageLines, &buffer[0], len + 1);
+    buffer.resize(len);
+    return buffer;
 }
