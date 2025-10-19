@@ -25,6 +25,14 @@ void Controller::OnExecuteButtonClicked(HWND hwnd) {
             fileContent += line + L"\r\n";
         }
         m_ui->AddMessageToLines(fileContent);
+        m_ui->AddMessageToLines(L"置換を実行します");
+        m_model->ReplaceInFile(m_ui->GetTargetText(), m_ui->GetReplacementText());
+        m_ui->AddMessageToLines(L"置換後の内容：");
+        fileContent.clear();
+        for (const auto& line : m_model->GetFileContent()) {
+            fileContent += line + L"\r\n";
+        }
+        m_ui->AddMessageToLines(fileContent);
     } else {
         m_ui->AddMessageToLines(L"ファイルの読み込みに失敗しました");
     }

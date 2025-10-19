@@ -33,3 +33,13 @@ bool Model::LoadFile() {
     file.close();
     return true;
 }
+
+void Model::ReplaceInFile(const std::wstring& target, const std::wstring& replacement) {
+    for (auto& line : m_fileContent) {
+        size_t pos = 0;
+        while ((pos = line.find(target, pos)) != std::wstring::npos) {
+            line.replace(pos, target.length(), replacement);
+            pos += replacement.length();
+        }
+    }
+}
