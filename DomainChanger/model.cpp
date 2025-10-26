@@ -35,6 +35,7 @@ bool Model::LoadFile() {
 }
 
 void Model::ReplaceInFile(const std::wstring& target, const std::wstring& replacement) {
+    if (target.empty()) return;
     for (auto& line : m_fileContent) {
         size_t pos = 0;
         while ((pos = line.find(target, pos)) != std::wstring::npos) {

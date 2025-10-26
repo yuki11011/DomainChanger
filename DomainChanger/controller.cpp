@@ -1,11 +1,10 @@
 #include "controller.h"
+#include "uiManager.h"
+#include "model.h"
 
-void Controller::SetUIManager(UIManager* ui) {
-    m_ui = ui;
-}
-
-void Controller::SetModel(Model* model) {
-    m_model = model;
+Controller::Controller(UIManager* ui, Model* model)
+    : m_ui(ui),
+    m_model(model) {
 }
 
 void Controller::OnBrowseButtonClicked(HWND hwnd) {
@@ -36,4 +35,9 @@ void Controller::OnExecuteButtonClicked(HWND hwnd) {
     } else {
         m_ui->AddMessageToLines(L"ƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½");
     }
+}
+
+void Controller::OnFilePathChanged() {
+    std::wstring text = m_ui->GetFilePathText();
+    m_model->SetFilePath(text);
 }

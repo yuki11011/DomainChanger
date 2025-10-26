@@ -1,25 +1,23 @@
 #include "window.h"
-#include <iostream>
-#include <fstream>
+#include "controller.h"
+#include "uiManager.h"
 
-#define IDC_EDIT 100
-
-Window::Window(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowTitle, int width, int height)
+Window::Window(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowTitle, Controller* controller, int width, int height)
     : m_hInstance(hInstance),
     m_nCmdShow(nCmdShow),
     m_hWnd(nullptr),
     m_windowTitle(windowTitle),
+    m_controller(controller),
+    m_ui(nullptr),
     m_width(width),
-    m_height(height),
-    m_ui(),
-    m_controller(),
-    m_model() {
+    m_height(height) {
 }
 
 Window::~Window() {
 }
 
-bool Window::Create() {
+bool Window::Create(UIManager* ui) {
+    m_ui = ui;
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
     wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -105,41 +103,30 @@ LRESULT CALLBACK Window::StaticWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
 LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
     case WM_DESTROY:
-        CoUninitialize();
         PostQuitMessage(0);
         return 0;
+
     case WM_CREATE: {
-        HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
-            COINIT_DISABLE_OLE1DDE);
-        if (FAILED(hr)) {
-            MessageBoxW(hwnd, L"COM‰Šú‰»‚ÉŽ¸”s‚µ‚Ü‚µ‚½", L"ƒGƒ‰[", MB_OK | MB_ICONERROR);
-            return -1;
-        }
-
-        m_ui.CreateControls(hwnd, m_hInstance);
-        m_controller.SetModel(&m_model);
-        m_controller.SetUIManager(&m_ui);
-
+        if (m_ui) m_ui->CreateControls(hwnd, m_hInstance);
         return 0;
     }
+
     case WM_COMMAND: {
         int wmId = LOWORD(wParam);
-
         switch (wmId) {
-        case IDC_FILEPATH_EDIT: {
-            std::wstring text = m_ui.GetFilePathText();
-            m_model.SetFilePath(text);
+        case IDC_FILEPATH_EDIT:
+            if (m_controller) m_controller->OnFilePathChanged();
             return 0;
-        }
 
         case IDC_BROWSE_BUTTON:
-            m_controller.OnBrowseButtonClicked(hwnd);
+            if (m_controller) m_controller->OnBrowseButtonClicked(hwnd);
             return 0;
 
         case IDC_EXECUTE_BUTTON:
-            m_controller.OnExecuteButtonClicked(hwnd);
+            if (m_controller) m_controller->OnExecuteButtonClicked(hwnd);
             return 0;
         }
+
         break;
     }
     }

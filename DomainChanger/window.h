@@ -2,13 +2,15 @@
 
 #include <Windows.h>
 #include <string>
-#include "controller.h"
+
+class Controller;
+class UIManager;
 
 class Window {
 public:
-    Window(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowTitle, int width = 1280, int height = 720);
+    Window(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowTitle, Controller* controller, int width = 1280, int height = 720);
     ~Window();
-    bool Create();
+    bool Create(UIManager* uiManager);
     void Show();
     HWND GetHWND() const;
     int GetWidth() const;
@@ -24,7 +26,6 @@ private:
     int m_width;
     int m_height;
 
-    Model m_model;
-    UIManager m_ui;
-    Controller m_controller;
+    UIManager* m_ui;
+    Controller* m_controller;
 };

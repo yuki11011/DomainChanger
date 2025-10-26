@@ -1,16 +1,20 @@
 #pragma once
 
-#include "model.h"
-#include "uiManager.h"
+struct HWND__;
+typedef struct HWND__* HWND;
+
+class UIManager;
+class Model;
 
 class Controller {
 public:
-    void SetUIManager(UIManager* ui);
-    void SetModel(Model* model);
+    Controller(UIManager* ui, Model* model);
 
     void OnBrowseButtonClicked(HWND hwnd);
     void OnExecuteButtonClicked(HWND hwnd);
+    void OnFilePathChanged();
+
 private:
-    Model* m_model;
     UIManager* m_ui;
+    Model* m_model;
 };

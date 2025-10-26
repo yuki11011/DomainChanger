@@ -1,9 +1,6 @@
 #pragma once
 
-#include <Windows.h>
 #include <string>
-#include <shobjidl.h>
-#include <tchar.h>
 
 #define IDC_FILEPATH_EDIT 1001
 #define IDC_BROWSE_BUTTON 1002
@@ -11,8 +8,16 @@
 #define IDC_REPLACEMENT_EDIT 1004
 #define IDC_EXECUTE_BUTTON 1005
 
+struct HWND__;
+typedef struct HWND__* HWND;
+struct HINSTANCE__;
+typedef struct HINSTANCE__* HINSTANCE;
+
 class UIManager {
 public:
+    UIManager();
+    ~UIManager();
+
     void CreateControls(HWND hwnd, HINSTANCE hInstance);
 
     void SetFilePathText(const std::wstring path);
@@ -28,11 +33,13 @@ public:
 
     std::wstring OpenFilePicker(HWND hwnd);
 
+    UIManager(const UIManager&) = delete;
+    UIManager& operator=(const UIManager&) = delete;
+    UIManager(UIManager&&) = delete;
+    UIManager& operator=(UIManager&&) = delete;
+
 private:
-    HWND m_filePathEdit;
-    HWND m_browseButton;
-    HWND m_targetEdit;
-    HWND m_replacementEdit;
-    HWND m_executeButton;
-    HWND m_messageLines;
+    struct UIManagerImpl;
+
+    UIManagerImpl* m_pImpl;
 };
