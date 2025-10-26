@@ -27,22 +27,21 @@ struct Application::ApplicationImpl {
 // --- Application クラスのメソッド ---
 
 Application::Application(HINSTANCE hInstance, int nCmdShow) {
-    m_pimpl = new ApplicationImpl(hInstance, nCmdShow);
+    m_pImpl = new ApplicationImpl(hInstance, nCmdShow);
 }
 
-Application::~Application() = default; // Pimpl のためのデストラクタ定義
+Application::~Application() {
+    delete m_pImpl;
+};
 
 int Application::Run() {
-    // 1. ウィンドウを作成
-    //    (Window::Create は内部で MessageHandler を呼び出し、
-    //     WM_CREATE で m_ui.CreateControls が呼ばれる)
-    if (!m_pimpl->m_window.Create(&m_pimpl->m_ui)) {
+    if (!m_pImpl->m_window.Create(&m_pImpl->m_ui)) {
         MessageBoxW(nullptr, L"ウィンドウの作成に失敗しました！", L"エラー", MB_OK | MB_ICONERROR);
         return -1;
     }
 
     // 2. ウィンドウを表示
-    m_pimpl->m_window.Show();
+    m_pImpl->m_window.Show();
 
     // 3. メッセージループ
     MSG msg = {};

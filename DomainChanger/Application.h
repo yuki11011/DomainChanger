@@ -28,5 +28,5 @@ public:
 
 private:
     struct ApplicationImpl;
-    ApplicationImpl* m_pimpl;
+    ApplicationImpl* m_pImpl;
 };
