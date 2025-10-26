@@ -58,6 +58,7 @@ bool Window::Create(UIManager* ui) {
         return false;
     }
 
+    m_ui = nullptr;
     return true;
 }
 
