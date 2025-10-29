@@ -102,23 +102,23 @@ std::wstring UIManager::OpenFilePicker(HWND hwnd) {
     return filePath;
 }
 
-void UIManager::SetFilePathText(const std::wstring path) {
+void UIManager::SetFilePathText(const std::wstring& path) {
     int res = SetWindowTextW(m_pImpl->m_filePathEdit, path.c_str());
 }
 
-void UIManager::SetTargetText(const std::wstring path) {
+void UIManager::SetTargetText(const std::wstring& path) {
     int res = SetWindowTextW(m_pImpl->m_targetEdit, path.c_str());
 }
 
-void UIManager::SetReplacementText(const std::wstring path) {
+void UIManager::SetReplacementText(const std::wstring& path) {
     int res = SetWindowTextW(m_pImpl->m_replacementEdit, path.c_str());
 }
 
-void UIManager::SetMessagesText(const std::wstring text) {
+void UIManager::SetMessagesText(const std::wstring& text) {
     int res = SetWindowTextW(m_pImpl->m_messageLines, text.c_str());
 }
 
-void UIManager::AddMessageToLines(const std::wstring message) {
+void UIManager::AddMessageToLines(const std::wstring& message) {
     std::wstring toAppend = message + L"\r\n";
     // Get current length and set selection to end
     int len = GetWindowTextLengthW(m_pImpl->m_messageLines);

@@ -5,7 +5,7 @@
 
 class Model {
 public:
-    void SetFilePath(std::wstring path);
+    void SetFilePath(std::wstring&& path);
 
     std::wstring GetFilePath() const;
     std::vector<std::wstring> GetFileContent() const;

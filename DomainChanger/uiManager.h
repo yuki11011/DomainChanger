@@ -20,11 +20,11 @@ public:
 
     void CreateControls(HWND hwnd, HINSTANCE hInstance);
 
-    void SetFilePathText(const std::wstring path);
-    void SetTargetText(const std::wstring path);
-    void SetReplacementText(const std::wstring path);
-    void SetMessagesText(const std::wstring text);
-    void AddMessageToLines(const std::wstring message);
+    void SetFilePathText(const std::wstring& path);
+    void SetTargetText(const std::wstring& path);
+    void SetReplacementText(const std::wstring& path);
+    void SetMessagesText(const std::wstring& text);
+    void AddMessageToLines(const std::wstring& message);
 
     std::wstring GetFilePathText() const;
     std::wstring GetTargetText() const;

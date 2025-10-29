@@ -11,7 +11,7 @@ void Controller::OnBrowseButtonClicked(HWND hwnd) {
     std::wstring filePath = m_ui->OpenFilePicker(hwnd);
     if (!filePath.empty()) {
         m_ui->SetFilePathText(filePath);
-        m_model->SetFilePath(filePath);
+        m_model->SetFilePath(std::move(filePath));
     }
 }
 
@@ -39,5 +39,5 @@ void Controller::OnExecuteButtonClicked(HWND hwnd) {
 
 void Controller::OnFilePathChanged() {
     std::wstring text = m_ui->GetFilePathText();
-    m_model->SetFilePath(text);
+    m_model->SetFilePath(std::move(text));
 }

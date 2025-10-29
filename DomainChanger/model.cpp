@@ -1,11 +1,13 @@
 #include "model.h"
 #include <iostream>
-#include <cstring>
 #include <fstream>
+#include <string>
+#include <vector>
 #include <locale>
 #include <codecvt>
+#include <sstream>
 
-void Model::SetFilePath(std::wstring path) {
+void Model::SetFilePath(std::wstring&& path) {
     m_filePath = std::move(path);
 }
 
@@ -19,18 +21,25 @@ std::vector<std::wstring> Model::GetFileContent() const {
 
 bool Model::LoadFile() {
     m_fileContent.clear();
-        std::wifstream file(m_filePath);
-    if (!file) {
+
+    std::ifstream file(m_filePath, std::ios::binary);
+    if (!file.is_open()) {
+        std::wcerr << L"Failed to open file: " << m_filePath << std::endl;
         return false;
     }
 
-    file.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
+    std::string utf8Data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    std::wstring content = converter.from_bytes(utf8Data);
+
+    std::wstringstream ss(content);
     std::wstring line;
-    while (std::getline(file, line)) {
+    while (std::getline(ss, line)) {
         m_fileContent.push_back(line);
     }
 
-    file.close();
     return true;
 }
 
