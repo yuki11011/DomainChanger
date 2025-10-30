@@ -7,6 +7,15 @@ Controller::Controller(UIManager* ui, Model* model)
     m_model(model) {
 }
 
+void Controller::SetNewTextLength(HWND hwnd) {
+    int overflowSize = m_model->GetFileContentSize() - m_ui->GetTargetText().length();
+    int newLimit = overflowSize + m_ui->GetReplacementText().length() + 1024;
+
+    m_ui->SetControlTextLimit(hwnd, newLimit);
+
+    m_ui->AddMessageToLines(L"（通知）テキスト長が最大に達したため、制限を " + std::to_wstring(newLimit) + L" に変更しました。");
+}
+
 void Controller::OnBrowseButtonClicked(HWND hwnd) {
     std::wstring filePath = m_ui->OpenFilePicker(hwnd);
     if (!filePath.empty()) {

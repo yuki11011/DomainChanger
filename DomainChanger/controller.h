@@ -10,6 +10,8 @@ class Controller {
 public:
     Controller(UIManager* ui, Model* model);
 
+    void SetNewTextLength(HWND hwnd);
+
     void OnBrowseButtonClicked(HWND hwnd);
     void OnExecuteButtonClicked(HWND hwnd);
     void OnFilePathChanged();

@@ -72,6 +72,10 @@ void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
         hwnd, NULL, hInstance, NULL);
 }
 
+void UIManager::SetControlTextLimit(HWND hwnd, int limit) {
+    if (hwnd) SendMessageW(hwnd, EM_SETLIMITTEXT, (WPARAM)limit, 0);
+}
+
 std::wstring UIManager::OpenFilePicker(HWND hwnd) {
     IFileOpenDialog* pFileOpen;
     std::wstring filePath;
@@ -115,11 +119,24 @@ void UIManager::SetReplacementText(const std::wstring& path) {
 }
 
 void UIManager::SetMessagesText(const std::wstring& text) {
+    long currentLimit = SendMessageW(m_pImpl->m_messageLines, EM_GETLIMITTEXT, 0, 0);
+    if (text.length() + 1 > currentLimit) {
+        SetControlTextLimit(m_pImpl->m_messageLines, static_cast<int>(text.length()) + 1024);
+    }
+
     int res = SetWindowTextW(m_pImpl->m_messageLines, text.c_str());
 }
 
 void UIManager::AddMessageToLines(const std::wstring& message) {
     std::wstring toAppend = message + L"\r\n";
+
+    int currentLen = GetWindowTextLengthW(m_pImpl->m_messageLines);
+    long currentLimit = SendMessageW(m_pImpl->m_messageLines, EM_GETLIMITTEXT, 0, 0);
+
+    if (currentLen + toAppend.length() + 1 > currentLimit) {
+        SetControlTextLimit(m_pImpl->m_messageLines, static_cast<int>(currentLen + toAppend.length()) + 1024);
+    }
+
     // Get current length and set selection to end
     int len = GetWindowTextLengthW(m_pImpl->m_messageLines);
     SendMessageW(m_pImpl->m_messageLines, EM_SETSEL, (WPARAM)len, (LPARAM)len);

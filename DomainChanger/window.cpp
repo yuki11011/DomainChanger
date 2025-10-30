@@ -114,6 +114,8 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
     case WM_COMMAND: {
         int wmId = LOWORD(wParam);
+        int wmEvent = HIWORD(wParam);
+
         switch (wmId) {
         case IDC_FILEPATH_EDIT:
             if (m_controller) m_controller->OnFilePathChanged();

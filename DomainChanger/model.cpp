@@ -19,6 +19,14 @@ std::vector<std::wstring> Model::GetFileContent() const {
     return m_fileContent;
 }
 
+int Model::GetFileContentSize() const {
+    int size = 0;
+    for (const auto& line : m_fileContent) {
+        size += static_cast<int>(line.length());
+    }
+    return size;
+}
+
 bool Model::LoadFile() {
     m_fileContent.clear();
 

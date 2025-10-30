@@ -9,6 +9,7 @@ public:
 
     std::wstring GetFilePath() const;
     std::vector<std::wstring> GetFileContent() const;
+    int GetFileContentSize() const;
 
     bool LoadFile();
 
