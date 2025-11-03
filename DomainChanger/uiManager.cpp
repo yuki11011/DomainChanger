@@ -22,54 +22,68 @@ UIManager::~UIManager() {
 }
 
 void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
+    // "Domain Changer v.1.0" のタイトルラベルを一番上に追加
+    CreateWindowEx(
+        0, L"STATIC", L"Domain Changer v.1.0",
+        WS_CHILD | WS_VISIBLE,
+        10, 10, 250, 24, // 新しいY座標
+        hwnd, NULL, hInstance, NULL
+    );
+
+    // 既存のコントロールのY座標をすべて 30px ずつ下にずらす
     HWND filePathLabel = CreateWindowEx(
         0, L"STATIC", L"対象ファイルのパス：",
         WS_CHILD | WS_VISIBLE,
-        10, 10, 250, 24,
+        10, 40, 250, 24, // 10 -> 40
         hwnd, NULL, hInstance, NULL
     );
     m_pImpl->m_filePathEdit = CreateWindow(
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
-        10, 40, 250, 24,
+        10, 70, 250, 24, // 40 -> 70
         hwnd, (HMENU)IDC_FILEPATH_EDIT, hInstance, NULL);
     m_pImpl->m_browseButton = CreateWindowEx(
         0, L"BUTTON", L"参照…",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        270, 40, 80, 24,
+        270, 70, 80, 24, // 40 -> 70
         hwnd, (HMENU)IDC_BROWSE_BUTTON, hInstance, NULL);
     HWND sourceLabel = CreateWindowEx(
         0, L"STATIC", L"置換する対象文字列：",
         WS_CHILD | WS_VISIBLE,
-        10, 70, 250, 24,
+        10, 100, 250, 24, // 70 -> 100
         hwnd, NULL, hInstance, NULL
     );
     m_pImpl->m_targetEdit = CreateWindow(
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER,
-        10, 100, 250, 24,
+        10, 130, 250, 24, // 100 -> 130
         hwnd, (HMENU)IDC_TARGET_EDIT, hInstance, NULL);
     HWND destLabel = CreateWindowEx(
         0, L"STATIC", L"変更後の文字列：",
         WS_CHILD | WS_VISIBLE,
-        10, 130, 250, 24,
+        10, 160, 250, 24, // 130 -> 160
         hwnd, NULL, hInstance, NULL
     );
     m_pImpl->m_replacementEdit = CreateWindow(
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER,
-        10, 160, 250, 24,
+        10, 190, 250, 24, // 160 -> 190
         hwnd, (HMENU)IDC_REPLACEMENT_EDIT, hInstance, NULL);
     m_pImpl->m_executeButton = CreateWindowEx(
         0, L"BUTTON", L"開始",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        10, 200, 100, 30,
+        10, 230, 100, 30, // 200 -> 230
         hwnd, (HMENU)IDC_EXECUTE_BUTTON, hInstance, NULL);
     m_pImpl->m_messageLines = CreateWindow(
         L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
-        380, 40, 880, 600,
+        380, 70, 880, 600, // 40 -> 70 (ファイルパスのEDITと高さを合わせる)
         hwnd, NULL, hInstance, NULL);
+}
+
+bool UIManager::ShowConfirmationDialog() {
+    int id = MessageBoxW(NULL, L"実行前に必ずバックアップを取ってください。\nこのプログラムの制作者はこのプログラムの使用によって生じた一切の損害に対して責任を負いません。\n処理を実行しますか？", L"確認", MB_OKCANCEL | MB_ICONQUESTION);
+    return id == IDOK;
 }
 
 void UIManager::SetControlTextLimit(HWND hwnd, int limit) {

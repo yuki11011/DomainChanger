@@ -22,6 +22,8 @@ public:
 
     void CreateControls(HWND hwnd, HINSTANCE hInstance);
 
+    bool ShowConfirmationDialog();
+
     void SetControlTextLimit(HWND hwnd, int limit);
 
     void SetFilePathText(const std::wstring& path);

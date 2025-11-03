@@ -6,6 +6,8 @@
 #include <locale>
 #include <codecvt>
 #include <sstream>
+#include <Windows.h>
+#undef CopyFile  // Windows.h のマクロを無効化
 
 void Model::SetFilePath(std::wstring&& path) {
     m_filePath = std::move(path);
@@ -30,34 +32,86 @@ int Model::GetFileContentSize() const {
 bool Model::LoadFile() {
     m_fileContent.clear();
 
-    std::ifstream file(m_filePath, std::ios::binary);
-    if (!file.is_open()) {
-        std::wcerr << L"Failed to open file: " << m_filePath << std::endl;
+    std::wifstream file(m_filePath);
+    if (!file) {
         return false;
     }
 
-    std::string utf8Data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    file.close();
-
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    std::wstring content = converter.from_bytes(utf8Data);
-
-    std::wstringstream ss(content);
+    file.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
     std::wstring line;
-    while (std::getline(ss, line)) {
+    while (std::getline(file, line)) {
         m_fileContent.push_back(line);
     }
+
+    file.close();
+    return true;
+}
+
+bool Model::CopyFile(const std::wstring& srcPath, const std::wstring& dstPath) {
+    std::ifstream src(srcPath, std::ios::binary);  // バイナリモードで開く
+    if (!src) return false;
+
+    std::ofstream dst(dstPath, std::ios::binary | std::ios::trunc);
+    if (!dst) return false;
+
+    dst << src.rdbuf(); // ストリームバッファをそのままコピー
 
     return true;
 }
 
-void Model::ReplaceInFile(const std::wstring& target, const std::wstring& replacement) {
-    if (target.empty()) return;
+bool Model::OverwriteFile() {
+    std::wstringstream ss;
+    for (const auto& line : m_fileContent) {
+        ss << line << L"\n";
+    }
+
+    // UTF-16（wchar_t）→ UTF-8変換
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    std::string utf8Text = converter.to_bytes(ss.str());
+
+    // wstringパスを確実に扱うため、_wfopenを使用
+    FILE* file = nullptr;
+    errno_t err = _wfopen_s(&file, m_filePath.c_str(), L"wb");
+    if (err != 0 || file == nullptr) {
+        return false;
+    }
+
+    size_t written = fwrite(utf8Text.data(), 1, utf8Text.size(), file);
+    fclose(file);
+
+    return written == utf8Text.size();
+}
+
+int Model::ReplaceInFile(const std::wstring& target, const std::wstring& replacement) {
+    int replacementsCount = 0;
+    if (target.empty()) return 0;
     for (auto& line : m_fileContent) {
         size_t pos = 0;
         while ((pos = line.find(target, pos)) != std::wstring::npos) {
             line.replace(pos, target.length(), replacement);
             pos += replacement.length();
+            replacementsCount++;
         }
     }
+    return replacementsCount;
+}
+
+std::wstring Model::GetFileNameFromPath(const std::wstring& path) const {
+    size_t pos = path.find_last_of(L"\\/");
+    if (pos != std::wstring::npos) {
+        return path.substr(pos + 1);
+    }
+    return path;
+}
+
+bool Model::CreateDirectoryIfNotExists(const std::wstring& dirPath) {
+    DWORD attributes = GetFileAttributesW(dirPath.c_str());
+    
+    // ディレクトリが既に存在する場合
+    if (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY)) {
+        return true;
+    }
+    
+    // ディレクトリを作成
+    return CreateDirectoryW(dirPath.c_str(), NULL) != 0 || GetLastError() == ERROR_ALREADY_EXISTS;
 }

@@ -16,8 +16,7 @@ struct Application::ApplicationImpl {
         m_model(),
         m_ui(),
         m_controller(&m_ui, &m_model), // ★依存注入（UIとModelのアドレスを渡す）
-        m_window(hInstance, nCmdShow, L"Domain Changer", &m_controller) // ★依存注入（Controllerのアドレスを渡す）
-    {
+        m_window(hInstance, nCmdShow, L"Domain Changer v.1.0", &m_controller) { // ★依存注入（Controllerのアドレスを渡す）
         if (FAILED(m_comInit.GetHResult())) {
             throw std::runtime_error("COM initialization failed");
         }
