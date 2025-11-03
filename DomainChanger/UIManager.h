@@ -24,8 +24,6 @@ public:
 
     bool ShowConfirmationDialog();
 
-    void SetControlTextLimit(HWND hwnd, int limit);
-
     void SetFilePathText(const std::wstring& path);
     void SetTargetText(const std::wstring& path);
     void SetReplacementText(const std::wstring& path);
