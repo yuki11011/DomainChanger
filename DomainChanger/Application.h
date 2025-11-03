@@ -3,10 +3,10 @@
 
 #include <Windows.h>
 #include <string>
-#include "model.h"
-#include "uiManager.h"
-#include "controller.h"
-#include "window.h"
+#include "Model.h"
+#include "UIManager.h"
+#include "Controller.h"
+#include "Window.h"
 
 // RAII ƒ‰ƒbƒp[ (COM‚Ì‰Šú‰»/Œãˆ—‚ğ©“®‰»)
 class ComInitializer {

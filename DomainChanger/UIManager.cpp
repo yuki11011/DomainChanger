@@ -1,4 +1,4 @@
-#include "uiManager.h"
+#include "UIManager.h"
 
 #include <Windows.h>
 #include <shobjidl.h>
@@ -47,16 +47,16 @@ UIManager::~UIManager() {
 }
 
 void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
-    m_pImpl->m_titleLabel->Create(hwnd, hInstance, L"Domain Changer v.1.0", 0, 0, 0, 0);
-    m_pImpl->m_filePathLabel->Create(hwnd, hInstance, L"対象ファイルのパス：", 0, 0, 0, 0);
-    m_pImpl->m_filePathEdit->Create(hwnd, hInstance, L"", 0, 0, 0, 0);
-    m_pImpl->m_browseButton->Create(hwnd, hInstance, L"参照…", 0, 0, 0, 0);
-    m_pImpl->m_targetLabel->Create(hwnd, hInstance, L"置換する対象文字列：", 0, 0, 0, 0);
+    m_pImpl->m_titleLabel->Create(hwnd, hInstance, L"Domain Changer v.1.0", 10, 10, 250, 24);
+    m_pImpl->m_filePathLabel->Create(hwnd, hInstance, L"対象ファイルのパス：", 10, 40, 250, 24);
+    m_pImpl->m_filePathEdit->Create(hwnd, hInstance, L"", 10, 70, 250, 24);
+    m_pImpl->m_browseButton->Create(hwnd, hInstance, L"参照…", 270, 70, 80, 24);
+    m_pImpl->m_targetLabel->Create(hwnd, hInstance, L"置換する対象文字列：", 10, 100, 250, 24);
     m_pImpl->m_targetEdit->Create(hwnd, hInstance, L"", 10, 130, 250, 24);
-    m_pImpl->m_replacementLabel->Create(hwnd, hInstance, L"変更後の文字列：", 0, 0, 0, 0);
-    m_pImpl->m_replacementEdit->Create(hwnd, hInstance, L"", 0, 0, 0, 0);
-    m_pImpl->m_executeButton->Create(hwnd, hInstance, L"開始", 0, 0, 0, 0);
-    m_pImpl->m_messageLines->Create(hwnd, hInstance, L"", 0, 0, 0, 0, WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY);
+    m_pImpl->m_replacementLabel->Create(hwnd, hInstance, L"変更後の文字列：", 10, 160, 250, 24);
+    m_pImpl->m_replacementEdit->Create(hwnd, hInstance, L"", 10, 190, 250, 24);
+    m_pImpl->m_executeButton->Create(hwnd, hInstance, L"開始", 10, 230, 100, 30);
+    m_pImpl->m_messageLines->Create(hwnd, hInstance, L"", 380, 70, 880, 600, WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY);
 
     int initialDpi = GetDpiForWindow(hwnd);
     UpdateLayoutAndFonts(initialDpi);
@@ -68,61 +68,20 @@ void UIManager::UpdateLayoutAndFonts(int newDpi) {
     }
 
     LOGFONTW lf = {};
-    lf.lfHeight = -Scale(17, newDpi); // 17pt のフォントをスケール
+    lf.lfHeight = -UIControl::Scale(17, newDpi);
     wcscpy_s(lf.lfFaceName, L"Yu Gothic UI"); // UIに適したフォント
     m_pImpl->m_hFont = CreateFontIndirectW(&lf);
 
-    HWND hCtl; // 一時的なハンドル
-
-    // タイトルラベル
-    hCtl = m_pImpl->m_titleLabel->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(10, newDpi), Scale(10, newDpi), Scale(250, newDpi), Scale(24, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // ファイルパスラベル
-    hCtl = m_pImpl->m_filePathLabel->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(10, newDpi), Scale(40, newDpi), Scale(250, newDpi), Scale(24, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // ファイルパスエディット
-    hCtl = m_pImpl->m_filePathEdit->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(10, newDpi), Scale(70, newDpi), Scale(250, newDpi), Scale(24, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // 参照ボタン
-    hCtl = m_pImpl->m_browseButton->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(270, newDpi), Scale(70, newDpi), Scale(80, newDpi), Scale(24, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // 対象文字列ラベル
-    hCtl = m_pImpl->m_targetLabel->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(10, newDpi), Scale(100, newDpi), Scale(250, newDpi), Scale(24, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // 対象文字列エディット
-    hCtl = m_pImpl->m_targetEdit->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(10, newDpi), Scale(130, newDpi), Scale(250, newDpi), Scale(24, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // 置換文字列ラベル
-    hCtl = m_pImpl->m_replacementLabel->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(10, newDpi), Scale(160, newDpi), Scale(250, newDpi), Scale(24, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // 置換文字列エディット
-    hCtl = m_pImpl->m_replacementEdit->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(10, newDpi), Scale(190, newDpi), Scale(250, newDpi), Scale(24, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // 実行ボタン
-    hCtl = m_pImpl->m_executeButton->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(10, newDpi), Scale(230, newDpi), Scale(100, newDpi), Scale(30, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
-
-    // メッセージ表示エリア
-    hCtl = m_pImpl->m_messageLines->GetHwnd();
-    SetWindowPos(hCtl, NULL, Scale(380, newDpi), Scale(70, newDpi), Scale(880, newDpi), Scale(600, newDpi), SWP_NOZORDER);
-    SendMessage(hCtl, WM_SETFONT, (WPARAM)m_pImpl->m_hFont, TRUE);
+    m_pImpl->m_titleLabel->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_filePathLabel->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_filePathEdit->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_browseButton->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_targetLabel->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_targetEdit->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_replacementLabel->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_replacementEdit->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_executeButton->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    m_pImpl->m_messageLines->UpdateLayout(newDpi, m_pImpl->m_hFont);
 }
 
 bool UIManager::ShowConfirmationDialog() {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "uiControl.h"
+#include "UIControl.h"
 
 class ButtonControl : public UIControl {
 public:

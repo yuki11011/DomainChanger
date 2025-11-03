@@ -1,10 +1,11 @@
 #include "EditControl.h"
 
 bool EditControl::Create(HWND hParentWindow, HINSTANCE hInstance, const std::wstring initialText, int x, int y, int width, int height, DWORD style) {
+    m_baseRect = { x, y, x + width, y + height };
     HWND hwnd = CreateWindowEx(
         0, L"EDIT", initialText.c_str(),
         style,
-        x, y, width, height,
+        0, 0, 0, 0,
         hParentWindow, (HMENU)m_id, hInstance, NULL);
     if (!hwnd) {
         return false;

@@ -1,6 +1,6 @@
-#include "window.h"
-#include "controller.h"
-#include "uiManager.h"
+#include "Window.h"
+#include "Controller.h"
+#include "UIManager.h"
 
 Window::Window(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowTitle, Controller* controller, int width, int height)
     : m_hInstance(hInstance),

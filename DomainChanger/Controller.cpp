@@ -1,6 +1,6 @@
-#include "controller.h"
-#include "uiManager.h"
-#include "model.h"
+#include "Controller.h"
+#include "UIManager.h"
+#include "Model.h"
 #include <time.h>
 
 Controller::Controller(UIManager* ui, Model* model)

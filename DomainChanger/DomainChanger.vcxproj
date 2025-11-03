@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="ButtonControl.cpp" />
+    <ClCompile Include="UIControl.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="EditControl.cpp" />
     <ClCompile Include="main.cpp" />
