@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #define DEFAULT_TEXT_LIMIT_LENGTH 32767
 
@@ -14,6 +15,7 @@ struct HWND__;
 typedef struct HWND__* HWND;
 struct HINSTANCE__;
 typedef struct HINSTANCE__* HINSTANCE;
+class UIControl;
 
 class UIManager {
 public:
@@ -45,6 +47,5 @@ public:
 
 private:
     struct UIManagerImpl;
-
     UIManagerImpl* m_pImpl;
 };

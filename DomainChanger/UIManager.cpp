@@ -47,7 +47,7 @@ UIManager::~UIManager() {
 }
 
 void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
-    m_pImpl->m_titleLabel->Create(hwnd, hInstance, L"Domain Changer v.1.0", 10, 10, 250, 24);
+    m_pImpl->m_titleLabel->Create(hwnd, hInstance, L"Domain Changer v.2.0", 10, 10, 250, 24);
     m_pImpl->m_filePathLabel->Create(hwnd, hInstance, L"対象ファイルのパス：", 10, 40, 250, 24);
     m_pImpl->m_filePathEdit->Create(hwnd, hInstance, L"", 10, 70, 250, 24);
     m_pImpl->m_browseButton->Create(hwnd, hInstance, L"参照…", 270, 70, 80, 24);
