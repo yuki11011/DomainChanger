@@ -21,6 +21,7 @@ public:
     ~UIManager();
 
     void CreateControls(HWND hwnd, HINSTANCE hInstance);
+    void UpdateLayoutAndFonts(int newDpi);
 
     bool ShowConfirmationDialog();
 

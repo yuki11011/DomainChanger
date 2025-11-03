@@ -57,8 +57,6 @@ bool Window::Create(UIManager* ui) {
         MessageBoxW(nullptr, L"ウィンドウの作成に失敗しました！", L"エラー", MB_OK | MB_ICONERROR);
         return false;
     }
-
-    m_ui = nullptr;
     return true;
 }
 
@@ -109,6 +107,25 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
     case WM_CREATE: {
         if (m_ui) m_ui->CreateControls(hwnd, m_hInstance);
+        return 0;
+    }
+
+    case WM_DPICHANGED: {
+        int newDpi = HIWORD(wParam);
+
+        RECT* const prcNewWindow = reinterpret_cast<RECT*>(lParam);
+
+        SetWindowPos(hwnd,
+            NULL,
+            prcNewWindow->left,
+            prcNewWindow->top,
+            prcNewWindow->right - prcNewWindow->left,
+            prcNewWindow->bottom - prcNewWindow->top,
+            SWP_NOZORDER | SWP_NOACTIVATE);
+
+        if (m_ui) {
+            m_ui->UpdateLayoutAndFonts(newDpi);
+        }
         return 0;
     }
 

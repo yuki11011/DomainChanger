@@ -12,7 +12,7 @@ public:
         HINSTANCE hInstance,
         const std::wstring initialText,
         int x, int y, int width, int height,
-        DWORD style = WS_CHILD | WS_VISIBLE | WS_BORDER
+        DWORD style = WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL
     ) override;
 
     std::wstring GetText() const;
