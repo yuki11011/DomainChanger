@@ -25,6 +25,8 @@ struct UIManager::UIManagerImpl {
     std::unique_ptr<EditControl> m_messageLines;
 
     HFONT m_hFont = nullptr;
+
+    std::vector<UIControl*> m_allControls;
 };
 
 UIManager::UIManager() {
@@ -40,6 +42,19 @@ UIManager::UIManager() {
     m_pImpl->m_replacementEdit = std::make_unique<EditControl>(IDC_REPLACEMENT_EDIT);
     m_pImpl->m_executeButton = std::make_unique<ButtonControl>(IDC_EXECUTE_BUTTON);
     m_pImpl->m_messageLines = std::make_unique<EditControl>();
+
+    m_pImpl->m_allControls = {
+        m_pImpl->m_titleLabel.get(),
+        m_pImpl->m_filePathLabel.get(),
+        m_pImpl->m_filePathEdit.get(),
+        m_pImpl->m_browseButton.get(),
+        m_pImpl->m_targetLabel.get(),
+        m_pImpl->m_targetEdit.get(),
+        m_pImpl->m_replacementLabel.get(),
+        m_pImpl->m_replacementEdit.get(),
+        m_pImpl->m_executeButton.get(),
+        m_pImpl->m_messageLines.get()
+    };  
 }
 
 UIManager::~UIManager() {
@@ -72,16 +87,9 @@ void UIManager::UpdateLayoutAndFonts(int newDpi) {
     wcscpy_s(lf.lfFaceName, L"Yu Gothic UI"); // UIに適したフォント
     m_pImpl->m_hFont = CreateFontIndirectW(&lf);
 
-    m_pImpl->m_titleLabel->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_filePathLabel->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_filePathEdit->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_browseButton->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_targetLabel->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_targetEdit->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_replacementLabel->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_replacementEdit->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_executeButton->UpdateLayout(newDpi, m_pImpl->m_hFont);
-    m_pImpl->m_messageLines->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    for (auto control : m_pImpl->m_allControls) {
+        control->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    }
 }
 
 bool UIManager::ShowConfirmationDialog() {
