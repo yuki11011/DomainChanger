@@ -32,6 +32,23 @@ bool UIManager::HandleCommand(WPARAM wParam) {
     return false;
 }
 
+void UIManager::UpdateLayoutAndFonts(int newDpi) {
+    if (m_hFont) {
+        DeleteObject(m_hFont);
+        m_hFont = nullptr;
+    }
+
+    LOGFONTW lf = {};
+    lf.lfHeight = -UIControl::Scale(16, newDpi);
+    lf.lfWeight = FW_NORMAL;
+    wcscpy_s(lf.lfFaceName, L"Yu Gothic UI");
+    m_hFont = CreateFontIndirectW(&lf);
+
+    for (auto& ctrl : m_controls) {
+        ctrl->UpdateLayout(newDpi, m_hFont);
+    }
+}
+
 bool UIManager::ShowConfirmationDialog() {
     int id = MessageBoxW(NULL, L"実行前に必ずバックアップを取ってください。\nこのプログラムの制作者はこのプログラムの使用によって生じた一切の損害に対して責任を負いません。\n処理を実行しますか？", L"確認", MB_OKCANCEL | MB_ICONQUESTION);
     return id == IDOK;

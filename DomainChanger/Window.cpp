@@ -107,6 +107,10 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
     case WM_CREATE: {
         if (m_ui) m_ui->CreateControls(hwnd, m_hInstance);
+
+        int initialDpi = GetDpiForWindow(hwnd);
+        if (m_ui) m_ui->UpdateLayoutAndFonts(initialDpi);
+
         return 0;
     }
 
@@ -123,9 +127,9 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             prcNewWindow->bottom - prcNewWindow->top,
             SWP_NOZORDER | SWP_NOACTIVATE);
 
-        //if (m_ui) {
-        //    m_ui->UpdateLayoutAndFonts(newDpi);
-        //}
+        if (m_ui) {
+            m_ui->UpdateLayoutAndFonts(newDpi);
+        }
         return 0;
     }
 

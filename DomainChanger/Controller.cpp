@@ -15,39 +15,51 @@ Controller::Controller(UIManager* ui, Model* model)
 }
 
 void Controller::InitializeUI() {
-    MessageLineControl* messageLines;
-    m_ui->AddControl<StaticControl>(10, 10, 250, 24, L"Domain Changer v.2.0");
+    m_ui->AddControl<StaticControl>(10, 10, 250, 24, L"Domain Changer v.2.1");
     m_ui->AddControl<StaticControl>(10, 40, 250, 24, L"対象ファイルのパス");
 
     auto* pathEdit = m_ui->AddControl<EditControl>(10, 70, 250, 24, m_model->GetFilePath());
-
+    m_model->SubscribeFilePath([pathEdit](const std::wstring& newVal) {
+        if (pathEdit->GetText() != newVal) {
+            pathEdit->SetText(newVal);
+        }
+        });
     pathEdit->SetOnValueChanged([this](const std::wstring& val) {
         m_model->SetFilePath(std::wstring(val));
         });
 
     auto* browseButton = m_ui->AddControl<ButtonControl>(270, 70, 80, 24, L"参照...");
-
-    browseButton->SetOnClick([this, pathEdit]() {
+    browseButton->SetOnClick([this]() {
         std::wstring path = m_ui->OpenFilePicker(nullptr);
         if (!path.empty()) {
-            pathEdit->SetText(path);
+            m_model->SetFilePath(std::move(path));
         }
         });
 
     m_ui->AddControl<StaticControl>(10, 100, 250, 24, L"置換する対象文字列：");
     auto* targetEdit = m_ui->AddControl<EditControl>(10, 130, 250, 24, m_model->GetTargetText());
+    m_model->SubscribeTargetText([targetEdit](const std::wstring& newVal) {
+        if (targetEdit->GetText() != newVal) {
+            targetEdit->SetText(newVal);
+        }
+        });
     targetEdit->SetOnValueChanged([this](const std::wstring& val) {
         m_model->SetTargetText(std::wstring(val));
         });
 
     m_ui->AddControl<StaticControl>(10, 160, 250, 24, L"変更後の文字列：");
     auto* replacementEdit = m_ui->AddControl<EditControl>(10, 190, 250, 24, m_model->GetReplacementText());
+    m_model->SubscribeReplacementText([replacementEdit](const std::wstring& newVal) {
+        if (replacementEdit->GetText() != newVal) {
+            replacementEdit->SetText(newVal);
+        }
+        });
     replacementEdit->SetOnValueChanged([this](const std::wstring& val) {
         m_model->SetReplacementText(std::wstring(val));
         });
 
     auto* executeButton = m_ui->AddControl<ButtonControl>(10, 230, 100, 30, L"開始");
-    executeButton->SetOnClick([this, messageLines]() {
+    executeButton->SetOnClick([this]() {
         auto res = m_ui->ShowConfirmationDialog();
         if (!res) {
             m_model->AddMessageToLines(L"*処理がキャンセルされました");
@@ -97,7 +109,10 @@ void Controller::InitializeUI() {
             m_model->AddMessageToLines(L"*指定されたパスを確認してください");
         }
         });
-    messageLines = m_ui->AddControl<MessageLineControl>(380, 70, 880, 600, L"");
+    auto* messageLines = m_ui->AddControl<MessageLineControl>(380, 70, 880, 600, L"");
+    m_model->SubscribeMessageLines([messageLines](const std::wstring& newVal) {
+            messageLines->AddMessageToLines(newVal);
+        });
 }
 
 std::wstring Controller::GetDateString() {

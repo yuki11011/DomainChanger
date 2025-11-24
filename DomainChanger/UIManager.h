@@ -21,6 +21,7 @@ public:
 
     void CreateControls(HWND hwnd, HINSTANCE hInstance);
     bool HandleCommand(WPARAM wParam);
+    void UpdateLayoutAndFonts(int newDpi);
 
     bool ShowConfirmationDialog();
 
@@ -34,4 +35,5 @@ public:
 private:
     std::vector<std::unique_ptr<UIControl>> m_controls;
     std::map<int, UIControl*> m_controlMap;
+    HFONT m_hFont = nullptr;
 };

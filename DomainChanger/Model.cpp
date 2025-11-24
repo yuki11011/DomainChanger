@@ -24,6 +24,7 @@ int Model::GetFileContentSize() const {
 void Model::AddMessageToLines(const std::wstring& message) {
     std::wstring toAppend = message + L"\r\n";
     m_messageLines.append(toAppend);
+    m_onMessageAppended(message);
 }
 
 bool Model::LoadFile() {
