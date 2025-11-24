@@ -1,13 +1,19 @@
 #include "UIControl.h"
 
-void UIControl::UpdateLayout(int newDpi, HFONT hFont) {
-    if (!m_hwnd) return;
+UIControl::UIControl() : m_hwnd(nullptr), m_params{} {
+    m_id = GenerateId();
+}
 
-    int scaledX = Scale(m_baseRect.left, newDpi);
-    int scaledY = Scale(m_baseRect.top, newDpi);
-    int scaledW = Scale(m_baseRect.right - m_baseRect.left, newDpi);
-    int scaledH = Scale(m_baseRect.bottom - m_baseRect.top, newDpi);
+int UIControl::GenerateId() {
+    static int s_currentId = 2000;
+    return s_currentId++;
+}
 
-    SetWindowPos(m_hwnd, NULL, scaledX, scaledY, scaledW, scaledH, SWP_NOZORDER);
-    SendMessage(m_hwnd, WM_SETFONT, (WPARAM)hFont, TRUE);
+void UIControl::Setup(int x, int y, int width, int height, const std::wstring& text, DWORD style) {
+    m_params.x = x;
+    m_params.y = y;
+    m_params.width = width;
+    m_params.height = height;
+    m_params.text = text;
+    if (style != 0) m_params.style = style;
 }

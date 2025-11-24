@@ -34,6 +34,7 @@ Application::~Application() {
 };
 
 int Application::Run() {
+    if (m_pImpl) m_pImpl->m_controller.InitializeUI();
     if (!m_pImpl->m_window.Create(&m_pImpl->m_ui)) {
         MessageBoxW(nullptr, L"ウィンドウの作成に失敗しました！", L"エラー", MB_OK | MB_ICONERROR);
         return -1;

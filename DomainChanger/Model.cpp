@@ -9,14 +9,6 @@
 #include <Windows.h>
 #undef CopyFile  // Windows.h ‚Ìƒ}ƒNƒ‚ğ–³Œø‰»
 
-void Model::SetFilePath(std::wstring&& path) {
-    m_filePath = std::move(path);
-}
-
-std::wstring Model::GetFilePath() const {
-    return m_filePath;
-}
-
 std::vector<std::wstring> Model::GetFileContent() const {
     return m_fileContent;
 }
@@ -27,6 +19,11 @@ int Model::GetFileContentSize() const {
         size += static_cast<int>(line.length());
     }
     return size;
+}
+
+void Model::AddMessageToLines(const std::wstring& message) {
+    std::wstring toAppend = message + L"\r\n";
+    m_messageLines.append(toAppend);
 }
 
 bool Model::LoadFile() {

@@ -1,20 +1,20 @@
 #include "EditControl.h"
 
-bool EditControl::Create(HWND hParentWindow, HINSTANCE hInstance, const std::wstring initialText, int x, int y, int width, int height, DWORD style) {
-    m_baseRect = { x, y, x + width, y + height };
-    HWND hwnd = CreateWindowEx(
-        0, L"EDIT", initialText.c_str(),
-        style,
-        0, 0, 0, 0,
-        hParentWindow, (HMENU)m_id, hInstance, NULL);
-    if (!hwnd) {
-        return false;
+bool EditControl::Create(HWND hParentWindow, HINSTANCE hInstance) {
+    m_hwnd = CreateWindowExW(0, L"EDIT", m_params.text.c_str(), m_params.style,
+        m_params.x, m_params.y, m_params.width, m_params.height,
+        hParentWindow, (HMENU)(intptr_t)m_id, hInstance, nullptr);
+    return m_hwnd != nullptr;
+}
+
+void EditControl::OnCommand(WORD notificationCode) {
+    if (notificationCode == EN_CHANGE && m_callback) {
+        m_callback(GetText());
     }
-    m_hwnd = hwnd;
-    return true;
 }
 
 std::wstring EditControl::GetText() const {
+    if (m_hwnd == nullptr) return L"";
     int len = GetWindowTextLengthW(m_hwnd);
     if (len <= 0) return L"";
     std::wstring buffer;
@@ -30,25 +30,6 @@ void EditControl::SetText(const std::wstring& text) {
         SetControlTextLimit(m_hwnd, static_cast<int>(text.length()) + 1024);
     }
     SetWindowTextW(m_hwnd, text.c_str());
-}
-
-void EditControl::AddLine(const std::wstring& message) {
-    std::wstring toAppend = message + L"\r\n";
-
-    int currentLen = GetWindowTextLengthW(m_hwnd);
-    long currentLimit = SendMessageW(m_hwnd, EM_GETLIMITTEXT, 0, 0);
-
-    if (currentLen + toAppend.length() + 1 > currentLimit) {
-        this->SetControlTextLimit(m_hwnd, static_cast<int>(currentLen + toAppend.length()) + 1024);
-    }
-
-    // Get current length and set selection to end
-    int len = GetWindowTextLengthW(m_hwnd);
-    SendMessageW(m_hwnd, EM_SETSEL, (WPARAM)len, (LPARAM)len);
-    // Replace selection (empty) with new text
-    SendMessageW(m_hwnd, EM_REPLACESEL, FALSE, (LPARAM)toAppend.c_str());
-    // Ensure caret/scroll follows appended text
-    SendMessageW(m_hwnd, EM_SCROLLCARET, 0, 0);
 }
 
 void EditControl::SetControlTextLimit(HWND hwnd, int limit) const {

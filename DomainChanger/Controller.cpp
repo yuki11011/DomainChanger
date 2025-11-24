@@ -1,84 +1,103 @@
 #include "Controller.h"
+#include "EditControl.h"
+#include "MessageLineControl.h"
+#include "ButtonControl.h"
+#include "StaticControl.h"
 #include "UIManager.h"
 #include "Model.h"
 #include <time.h>
+
+#undef CopyFile
 
 Controller::Controller(UIManager* ui, Model* model)
     : m_ui(ui),
     m_model(model) {
 }
 
-void Controller::OnBrowseButtonClicked(HWND hwnd) {
-    std::wstring filePath = m_ui->OpenFilePicker(hwnd);
-    if (!filePath.empty()) {
-        m_ui->SetFilePathText(filePath);
-        m_model->SetFilePath(std::move(filePath));
-    }
-}
+void Controller::InitializeUI() {
+    MessageLineControl* messageLines;
+    m_ui->AddControl<StaticControl>(10, 10, 250, 24, L"Domain Changer v.2.0");
+    m_ui->AddControl<StaticControl>(10, 40, 250, 24, L"対象ファイルのパス");
 
-void Controller::OnExecuteButtonClicked(HWND hwnd) {
-    if (!m_ui->ShowConfirmationDialog()) {
-        m_ui->AddMessageToLines(L"*処理がキャンセルされました");
-        return;
-    }
-    if (m_model->LoadFile()) {
-        m_ui->AddMessageToLines(L"*ファイルの読み込みに成功しました");
-        //m_ui->AddMessageToLines(L"*ファイルの内容：");
-        //std::wstring fileContent;
-        //for (const auto& line : m_model->GetFileContent()) {
-        //    fileContent += line + L"\r\n";
-        //}
-        //m_ui->AddMessageToLines(fileContent);
-        
-        // backupsディレクトリを作成
-        std::wstring backupDir = L"backups";
-        if (!m_model->CreateDirectoryIfNotExists(backupDir)) {
-            m_ui->AddMessageToLines(L"*バックアップディレクトリの作成に失敗しました");
-            m_ui->AddMessageToLines(L"*処理を中止します");
-            return;
+    auto* pathEdit = m_ui->AddControl<EditControl>(10, 70, 250, 24, m_model->GetFilePath());
+
+    pathEdit->SetOnValueChanged([this](const std::wstring& val) {
+        m_model->SetFilePath(std::wstring(val));
+        });
+
+    auto* browseButton = m_ui->AddControl<ButtonControl>(270, 70, 80, 24, L"参照...");
+
+    browseButton->SetOnClick([this, pathEdit]() {
+        std::wstring path = m_ui->OpenFilePicker(nullptr);
+        if (!path.empty()) {
+            pathEdit->SetText(path);
         }
-        
-        std::wstring date = GetDateString();
-        std::wstring fileName = m_model->GetFileNameFromPath(m_model->GetFilePath());
-        std::wstring backupPath = backupDir + L"\\" + fileName + L"_" + date + L".bak";
-        
-        bool res = m_model->CopyFile(m_model->GetFilePath(), backupPath);
+        });
+
+    m_ui->AddControl<StaticControl>(10, 100, 250, 24, L"置換する対象文字列：");
+    auto* targetEdit = m_ui->AddControl<EditControl>(10, 130, 250, 24, m_model->GetTargetText());
+    targetEdit->SetOnValueChanged([this](const std::wstring& val) {
+        m_model->SetTargetText(std::wstring(val));
+        });
+
+    m_ui->AddControl<StaticControl>(10, 160, 250, 24, L"変更後の文字列：");
+    auto* replacementEdit = m_ui->AddControl<EditControl>(10, 190, 250, 24, m_model->GetReplacementText());
+    replacementEdit->SetOnValueChanged([this](const std::wstring& val) {
+        m_model->SetReplacementText(std::wstring(val));
+        });
+
+    auto* executeButton = m_ui->AddControl<ButtonControl>(10, 230, 100, 30, L"開始");
+    executeButton->SetOnClick([this, messageLines]() {
+        auto res = m_ui->ShowConfirmationDialog();
         if (!res) {
-            m_ui->AddMessageToLines(L"*バックアップファイルの作成に失敗しました");
-            m_ui->AddMessageToLines(L"*処理を中止します");
+            m_model->AddMessageToLines(L"*処理がキャンセルされました");
             return;
+        }
+
+        if (m_model->LoadFile()) {
+            m_model->AddMessageToLines(L"*ファイルの読み込みに成功しました");
+
+            std::wstring backupDir = L"backups";
+            if (!m_model->CreateDirectoryIfNotExists(backupDir)) {
+                m_model->AddMessageToLines(L"*バックアップディレクトリの作成に失敗しました");
+                m_model->AddMessageToLines(L"*処理を中止します");
+                return;
+            }
+
+            std::wstring date = GetDateString();
+            std::wstring fileName = m_model->GetFileNameFromPath(m_model->GetFilePath());
+            std::wstring backupPath = backupDir + L"\\" + fileName + L"_" + date + L".bak";
+
+            bool res = m_model->CopyFile(m_model->GetFilePath(), backupPath);
+            if (!res) {
+                m_model->AddMessageToLines(L"*バックアップファイルの作成に失敗しました");
+                m_model->AddMessageToLines(L"*処理を中止します");
+                return;
+            } else {
+                m_model->AddMessageToLines(L"*バックアップファイルを作成しました：" + backupPath);
+            }
+
+            m_model->AddMessageToLines(L"*置換を実行します");
+            m_model->AddMessageToLines(L"*置換対象：" + m_model->GetTargetText());
+            m_model->AddMessageToLines(L"*置換後：" + m_model->GetReplacementText());
+            int replacementsCount = m_model->ReplaceInFile(m_model->GetTargetText(), m_model->GetReplacementText());
+
+            m_model->AddMessageToLines(L"*置換処理が完了しました");
+            m_model->AddMessageToLines(L"* 置換した文字列の個数：" + std::to_wstring(replacementsCount));
+            m_model->AddMessageToLines(L"*ファイルを上書きします。");
+
+            if (!m_model->OverwriteFile()) {
+                m_model->AddMessageToLines(L"*ファイルの上書きに失敗しました");
+                m_model->AddMessageToLines(L"*ファイルが使用中か、書き込み権限がない可能性があります");
+                return;
+            }
+            m_model->AddMessageToLines(L"*ファイルの上書きに成功しました");
         } else {
-            m_ui->AddMessageToLines(L"*バックアップファイルを作成しました：" + backupPath);
+            m_model->AddMessageToLines(L"*ファイルの読み込みに失敗しました");
+            m_model->AddMessageToLines(L"*指定されたパスを確認してください");
         }
-        m_ui->AddMessageToLines(L"*置換を実行します");
-        m_ui->AddMessageToLines(L"*置換対象：" + m_ui->GetTargetText());
-        m_ui->AddMessageToLines(L"*置換後：" + m_ui->GetReplacementText());
-        int replacementsCount = m_model->ReplaceInFile(m_ui->GetTargetText(), m_ui->GetReplacementText());
-        //m_ui->AddMessageToLines(L"*置換後の内容：");
-        //fileContent.clear();
-        //for (const auto& line : m_model->GetFileContent()) {
-        //    fileContent += line + L"\r\n";
-        //}
-        //m_ui->AddMessageToLines(fileContent);
-        m_ui->AddMessageToLines(L"*置換処理が完了しました");
-        m_ui->AddMessageToLines(L"* 置換した文字列の個数：" + std::to_wstring(replacementsCount));
-        m_ui->AddMessageToLines(L"*ファイルを上書きします。");
-
-        if (!m_model->OverwriteFile()) {
-            m_ui->AddMessageToLines(L"*ファイルの上書きに失敗しました");
-            m_ui->AddMessageToLines(L"*ファイルが使用中か、書き込み権限がない可能性があります");
-            return;
-        }
-        m_ui->AddMessageToLines(L"*ファイルの上書きに成功しました");
-    } else {
-        m_ui->AddMessageToLines(L"*ファイルの読み込みに失敗しました");
-        m_ui->AddMessageToLines(L"*指定されたパスを確認してください");
-    }
-}
-
-void Controller::OnFilePathChanged() {
-    std::wstring text = m_ui->GetFilePathText();
-    m_model->SetFilePath(std::move(text));
+        });
+    messageLines = m_ui->AddControl<MessageLineControl>(380, 70, 880, 600, L"");
 }
 
 std::wstring Controller::GetDateString() {

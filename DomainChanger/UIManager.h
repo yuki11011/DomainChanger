@@ -2,41 +2,27 @@
 
 #include <string>
 #include <vector>
-
-#define DEFAULT_TEXT_LIMIT_LENGTH 32767
-
-#define IDC_FILEPATH_EDIT 1001
-#define IDC_BROWSE_BUTTON 1002
-#define IDC_TARGET_EDIT 1003
-#define IDC_REPLACEMENT_EDIT 1004
-#define IDC_EXECUTE_BUTTON 1005
-
-struct HWND__;
-typedef struct HWND__* HWND;
-struct HINSTANCE__;
-typedef struct HINSTANCE__* HINSTANCE;
-class UIControl;
+#include <memory>
+#include <map>
+#include "UIControl.h"
 
 class UIManager {
 public:
-    UIManager();
-    ~UIManager();
+    UIManager() = default;
+
+    template <typename T>
+    T* AddControl(int x, int y, int w, int h, const std::wstring& text = L"") {
+        auto ctrl = std::make_unique<T>();
+        ctrl->Setup(x, y, w, h, text);
+        T* ptr = ctrl.get();
+        m_controls.push_back(std::move(ctrl));
+        return ptr;
+    }
 
     void CreateControls(HWND hwnd, HINSTANCE hInstance);
-    void UpdateLayoutAndFonts(int newDpi);
+    bool HandleCommand(WPARAM wParam);
 
     bool ShowConfirmationDialog();
-
-    void SetFilePathText(const std::wstring& path);
-    void SetTargetText(const std::wstring& path);
-    void SetReplacementText(const std::wstring& path);
-    void SetMessagesText(const std::wstring& text);
-    void AddMessageToLines(const std::wstring& message);
-
-    std::wstring GetFilePathText() const;
-    std::wstring GetTargetText() const;
-    std::wstring GetReplacementText() const;
-    std::wstring GetMessagesText() const;
 
     std::wstring OpenFilePicker(HWND hwnd);
 
@@ -46,6 +32,6 @@ public:
     UIManager& operator=(UIManager&&) = delete;
 
 private:
-    struct UIManagerImpl;
-    UIManagerImpl* m_pImpl;
+    std::vector<std::unique_ptr<UIControl>> m_controls;
+    std::map<int, UIControl*> m_controlMap;
 };

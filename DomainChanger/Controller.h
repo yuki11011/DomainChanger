@@ -12,9 +12,8 @@ class Controller {
 public:
     Controller(UIManager* ui, Model* model);
 
-    void OnBrowseButtonClicked(HWND hwnd);
-    void OnExecuteButtonClicked(HWND hwnd);
-    void OnFilePathChanged();
+    void InitializeUI();
+
     std::wstring GetDateString();
 
 private:

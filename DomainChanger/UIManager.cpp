@@ -12,84 +12,24 @@ int Scale(int val, int dpi) {
     return MulDiv(val, dpi, 120); // 120 DPI (125%) を基準にする
 }
 
-struct UIManager::UIManagerImpl {
-    std::unique_ptr<StaticControl> m_titleLabel;
-    std::unique_ptr<StaticControl> m_filePathLabel;
-    std::unique_ptr<EditControl> m_filePathEdit;
-    std::unique_ptr<ButtonControl> m_browseButton;
-    std::unique_ptr<StaticControl> m_targetLabel;
-    std::unique_ptr<EditControl> m_targetEdit;
-    std::unique_ptr<StaticControl> m_replacementLabel;
-    std::unique_ptr<EditControl> m_replacementEdit;
-    std::unique_ptr<ButtonControl> m_executeButton;
-    std::unique_ptr<EditControl> m_messageLines;
-
-    HFONT m_hFont = nullptr;
-
-    std::vector<UIControl*> m_allControls;
-};
-
-UIManager::UIManager() {
-    m_pImpl = new UIManagerImpl();
-
-    m_pImpl->m_filePathEdit = std::make_unique<EditControl>(IDC_FILEPATH_EDIT);
-    m_pImpl->m_filePathLabel = std::make_unique<StaticControl>();
-    m_pImpl->m_targetLabel = std::make_unique<StaticControl>();
-    m_pImpl->m_browseButton = std::make_unique<ButtonControl>(IDC_BROWSE_BUTTON);
-    m_pImpl->m_replacementLabel = std::make_unique<StaticControl>();
-    m_pImpl->m_targetEdit = std::make_unique<EditControl>(IDC_TARGET_EDIT);
-    m_pImpl->m_titleLabel = std::make_unique<StaticControl>();
-    m_pImpl->m_replacementEdit = std::make_unique<EditControl>(IDC_REPLACEMENT_EDIT);
-    m_pImpl->m_executeButton = std::make_unique<ButtonControl>(IDC_EXECUTE_BUTTON);
-    m_pImpl->m_messageLines = std::make_unique<EditControl>();
-
-    m_pImpl->m_allControls = {
-        m_pImpl->m_titleLabel.get(),
-        m_pImpl->m_filePathLabel.get(),
-        m_pImpl->m_filePathEdit.get(),
-        m_pImpl->m_browseButton.get(),
-        m_pImpl->m_targetLabel.get(),
-        m_pImpl->m_targetEdit.get(),
-        m_pImpl->m_replacementLabel.get(),
-        m_pImpl->m_replacementEdit.get(),
-        m_pImpl->m_executeButton.get(),
-        m_pImpl->m_messageLines.get()
-    };  
-}
-
-UIManager::~UIManager() {
-    delete m_pImpl;
-}
-
 void UIManager::CreateControls(HWND hwnd, HINSTANCE hInstance) {
-    m_pImpl->m_titleLabel->Create(hwnd, hInstance, L"Domain Changer v.2.0", 10, 10, 250, 24);
-    m_pImpl->m_filePathLabel->Create(hwnd, hInstance, L"対象ファイルのパス：", 10, 40, 250, 24);
-    m_pImpl->m_filePathEdit->Create(hwnd, hInstance, L"", 10, 70, 250, 24);
-    m_pImpl->m_browseButton->Create(hwnd, hInstance, L"参照…", 270, 70, 80, 24);
-    m_pImpl->m_targetLabel->Create(hwnd, hInstance, L"置換する対象文字列：", 10, 100, 250, 24);
-    m_pImpl->m_targetEdit->Create(hwnd, hInstance, L"", 10, 130, 250, 24);
-    m_pImpl->m_replacementLabel->Create(hwnd, hInstance, L"変更後の文字列：", 10, 160, 250, 24);
-    m_pImpl->m_replacementEdit->Create(hwnd, hInstance, L"", 10, 190, 250, 24);
-    m_pImpl->m_executeButton->Create(hwnd, hInstance, L"開始", 10, 230, 100, 30);
-    m_pImpl->m_messageLines->Create(hwnd, hInstance, L"", 380, 70, 880, 600, WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY);
-
-    int initialDpi = GetDpiForWindow(hwnd);
-    UpdateLayoutAndFonts(initialDpi);
+    for (auto& ctrl : m_controls) {
+        if (ctrl->Create(hwnd, hInstance)) {
+            m_controlMap[ctrl->GetId()] = ctrl.get();
+        }
+    }
 }
 
-void UIManager::UpdateLayoutAndFonts(int newDpi) {
-    if (m_pImpl->m_hFont) {
-        DeleteObject(m_pImpl->m_hFont); // 古いフォントを削除
-    }
+bool UIManager::HandleCommand(WPARAM wParam) {
+    int id = LOWORD(wParam);
+    WORD code = HIWORD(wParam);
 
-    LOGFONTW lf = {};
-    lf.lfHeight = -UIControl::Scale(17, newDpi);
-    wcscpy_s(lf.lfFaceName, L"Yu Gothic UI"); // UIに適したフォント
-    m_pImpl->m_hFont = CreateFontIndirectW(&lf);
-
-    for (auto control : m_pImpl->m_allControls) {
-        control->UpdateLayout(newDpi, m_pImpl->m_hFont);
+    auto it = m_controlMap.find(id);
+    if (it != m_controlMap.end()) {
+        it->second->OnCommand(code);
+        return true;
     }
+    return false;
 }
 
 bool UIManager::ShowConfirmationDialog() {
@@ -125,40 +65,4 @@ std::wstring UIManager::OpenFilePicker(HWND hwnd) {
         pFileOpen->Release();
     }
     return filePath;
-}
-
-void UIManager::SetFilePathText(const std::wstring& path) {
-    m_pImpl->m_filePathEdit->SetText(path);
-}
-
-void UIManager::SetTargetText(const std::wstring& path) {
-    m_pImpl->m_targetEdit->SetText(path);
-}
-
-void UIManager::SetReplacementText(const std::wstring& path) {
-    m_pImpl->m_replacementEdit->SetText(path);
-}
-
-void UIManager::SetMessagesText(const std::wstring& text) {
-    m_pImpl->m_messageLines->SetText(text);
-}
-
-void UIManager::AddMessageToLines(const std::wstring& message) {
-    m_pImpl->m_messageLines->AddLine(message);
-}
-
-std::wstring UIManager::GetFilePathText() const {
-    return m_pImpl->m_filePathEdit->GetText();
-}
-
-std::wstring UIManager::GetTargetText() const {
-    return m_pImpl->m_targetEdit->GetText();
-}
-
-std::wstring UIManager::GetReplacementText() const {
-    return m_pImpl->m_replacementEdit->GetText();
-}
-
-std::wstring UIManager::GetMessagesText() const {
-    return m_pImpl->m_messageLines->GetText();
 }

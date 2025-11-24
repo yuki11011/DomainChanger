@@ -2,24 +2,29 @@
 
 #include <Windows.h>
 #include <string>
+#include <functional>
 
 class UIControl {
 public:
-    UIControl(int id) : m_id(id), m_hwnd(nullptr), m_baseRect({ 0, 0, 0, 0 }) {}
-    virtual ~UIControl() {};
+    UIControl();
+    virtual ~UIControl() = default;
+
+    struct CreateParams {
+        std::wstring text;
+        int x, y, width, height;
+        DWORD style;
+    };
+
+    void Setup(int x, int y, int width, int height, const std::wstring& text, DWORD style = 0);
 
     static const int s_baseDpi = 120;
     static int Scale(int val, int dpi) {
         return MulDiv(val, dpi, s_baseDpi);
     }
 
-    virtual bool Create(
-        HWND hParentWindow,
-        HINSTANCE hInstance,
-        const std::wstring initialText,
-        int x, int y, int width, int height,
-        DWORD style
-    ) = 0;
+    virtual bool Create(HWND hParentWindow, HINSTANCE hInstance) = 0;
+
+    virtual void OnCommand(WORD notificationCode) {}
 
     void UpdateLayout(int newDpi, HFONT hFont);
 
@@ -32,5 +37,8 @@ public:
 protected:
     long long int m_id;
     HWND m_hwnd;
-    RECT m_baseRect;
+    CreateParams m_params;
+
+private:
+    static int GenerateId();
 };

@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="ButtonControl.cpp" />
+    <ClCompile Include="MessageLineControl.cpp" />
     <ClCompile Include="UIControl.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="EditControl.cpp" />
@@ -139,6 +140,7 @@
     <ClInclude Include="ButtonControl.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="EditControl.h" />
+    <ClInclude Include="MessageLineControl.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="StaticControl.h" />
     <ClInclude Include="UIControl.h" />

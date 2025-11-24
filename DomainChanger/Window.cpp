@@ -123,31 +123,16 @@ LRESULT CALLBACK Window::MessageHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             prcNewWindow->bottom - prcNewWindow->top,
             SWP_NOZORDER | SWP_NOACTIVATE);
 
-        if (m_ui) {
-            m_ui->UpdateLayoutAndFonts(newDpi);
-        }
+        //if (m_ui) {
+        //    m_ui->UpdateLayoutAndFonts(newDpi);
+        //}
         return 0;
     }
 
     case WM_COMMAND: {
-        int wmId = LOWORD(wParam);
-        int wmEvent = HIWORD(wParam);
-
-        switch (wmId) {
-        case IDC_FILEPATH_EDIT:
-            if (m_controller) m_controller->OnFilePathChanged();
-            return 0;
-
-        case IDC_BROWSE_BUTTON:
-            if (m_controller) m_controller->OnBrowseButtonClicked(hwnd);
-            return 0;
-
-        case IDC_EXECUTE_BUTTON:
-            if (m_controller) m_controller->OnExecuteButtonClicked(hwnd);
+        if (m_ui && m_ui->HandleCommand(wParam)) {
             return 0;
         }
-
-        break;
     }
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
